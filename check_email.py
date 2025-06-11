@@ -35,16 +35,38 @@ def check_email_security(domain):
     dmarc_value = next((record for record in dmarc_record if record.startswith('"v=DMARC1')), 'No DMARC record') if dmarc_record else 'No DMARC record'
     dkim_value = next((record for record in dkim_record if record.startswith('"v=DKIM1')), 'No DKIM record') if dkim_record else 'No DKIM record'
 
-    interpretation = 'Not secure: No authentication mechanisms in place'
-    if spf_value != 'No SPF record' or dkim_value != 'No DKIM record':
-        if dmarc_value != 'No DMARC record':
-            if 'p=reject' in dmarc_value or 'p=quarantine' in dmarc_value:
-                interpretation = 'Best practice: Strong protection against spoofing and phishing'
-            else:
-                interpretation = 'Not secure: DMARC policy is monitoring only'
-        else:
-            interpretation = 'Not secure: Missing DMARC record'
+    interpretation = interpret_security(spf_value, dmarc_value, dkim_value)
     return [domain, spf_value, dmarc_value, dkim_value, interpretation]
+
+def interpret_security(spf, dmarc, dkim):
+    if spf and dmarc and dkim:
+        if 'p=reject' in dmarc or 'p=quarantine' in dmarc:
+            if 'rua=' in dmarc:
+                return 'Best practice: Strong protection with reporting'
+            else:
+                return 'Strong protection but missing reporting address'
+        else:
+            return 'Not secure: DMARC policy is monitoring only'
+    elif spf and dmarc:
+        if 'p=reject' in dmarc or 'p=quarantine' in dmarc:
+            if 'rua=' in dmarc:
+                return 'Secure with SPF and DMARC, reporting enabled'
+            else:
+                return 'Secure with SPF and DMARC, missing reporting address'
+        else:
+            return 'Not secure: DMARC policy is monitoring only'
+    elif dkim and dmarc:
+        if 'p=reject' in dmarc or 'p=quarantine' in dmarc:
+            if 'rua=' in dmarc:
+                return 'Secure with DKIM and DMARC, reporting enabled'
+            else:
+                return 'Secure with DKIM and DMARC, missing reporting address'
+        else:
+            return 'Not secure: DMARC policy is monitoring only'
+    elif spf and dkim:
+        return 'Secure with SPF and DKIM, but missing DMARC'
+    else:
+        return 'Not secure: Missing essential records'
 
 # Function to check email security for multiple domains from a file
 def check_multiple_domains(file_path):
