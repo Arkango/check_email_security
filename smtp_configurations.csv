@@ -1,0 +1,6 @@
+Server,Port,Sender,Recipient Email,Subject,Body,Username,Password
+smtp.example.com,587,sender@example.com,recipient@example.com,Test Subject 1,Test Body 1,username1,password1
+smtp.test.com,25,sender@test.com,recipient@test.com,Test Subject 2,Test Body 2,username2,password2
+smtp.mail.com,465,sender@mail.com,recipient@mail.com,Test Subject 3,Test Body 3,username3,password3
+smtp.server.com,587,sender@server.com,recipient@server.com,Test Subject 4,Test Body 4,username4,password4
+smtp.provider.com,25,sender@provider.com,recipient@provider.com,Test Subject 5,Test Body 5,username5,password5
